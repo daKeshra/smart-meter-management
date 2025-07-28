@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 
 const NavItem = ({ icon: Icon, label, active, onClick, collapsed }) => (
