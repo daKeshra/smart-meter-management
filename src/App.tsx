@@ -128,13 +128,6 @@ const App = () => {
   const [loading, setLoading] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  // @ts-ignore
-  const [showAddMeterModal, setShowAddMeterModal] = useState(false);
-  // @ts-ignore
-  const [showAddDCOModal, setShowAddDCOModal] = useState(false);
-  // @ts-ignore
-  const [showAddMeterModal, setShowAddMeterModal] = useState(false);
-  // @ts-ignore
   const [showAddMeterModal, setShowAddMeterModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [deviceFilter, setDeviceFilter] = useState('all');
@@ -142,9 +135,7 @@ const App = () => {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [chartTimeRange, setChartTimeRange] = useState('24h');
   const [powerChartData, setPowerChartData] = useState([]);
-  // @ts-ignore
   const [showPowerControlModal, setShowPowerControlModal] = useState(false);
-  // @ts-ignore
   const [powerControlDevice, setPowerControlDevice] = useState(null);
 
   // Mock data for demonstration
