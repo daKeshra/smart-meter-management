@@ -51,7 +51,7 @@ import { LineChart as RechartsLineChart, Line, XAxis, YAxis, CartesianGrid, Tool
 
 import Sidebar from './components/Sidebar';
 import DashboardView from './components/DashboardView';
-import DisCosView from './components/DisCosView';
+import DisCosView from './components/DisCOsView';
 import MetersView from './components/MetersView';
 import AnalyticsView from './components/AnalyticsView';
 import CustomersView from './components/CustomersView';
