@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 
-const SignUpPage = ({ onSwitchToLogin, onSignupSuccess }) => {
+const SignUpPage = ({ onSwitchToLogin, onSignupSuccess }:any) => {
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',

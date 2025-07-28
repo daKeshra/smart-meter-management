@@ -1,53 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { 
-  Zap, 
-  Settings, 
-  Bell, 
+    Settings, 
   Monitor, 
-  RefreshCw, 
-  FileText, 
-  Plus,
-  TrendingUp,
-  AlertTriangle,
-  User,
-  Power,
-  Activity,
-  LogOut,
-  ChevronDown,
-  Menu,
-  Gauge,
-  X,
-  Building2,
-  MapPin,
-  Calendar,
-  Edit,
-  Trash2,
-  Search,
-  Filter,
-  Eye,
   Wifi,
   WifiOff,
-  Clock,
-  Home,
-  Users,
-  AlertCircle,
-  Thermometer,
-  Phone,
-  Mail,
-  CheckCircle,
-  XCircle,
-  Flame,
-  BellRing,
-  BarChart3,
-  LineChart,
-  PowerOff,
-  Shield,
   Zap as ZapOff,
-  TrendingDown,
-  Timer,
-  PieChart
 } from 'lucide-react';
-import { LineChart as RechartsLineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area, BarChart, Bar, PieChart as RechartsPieChart, Cell, Pie } from 'recharts';
+// import { LineChart as RechartsLineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area, BarChart, Bar, PieChart as RechartsPieChart, Cell, Pie } from 'recharts';
 
 import Sidebar from './components/Sidebar';
 import DashboardView from './components/DashboardView';
@@ -72,10 +31,7 @@ const App = () => {
     lastUpdate: '4% from last hour'
   });
 
-  const navigate = (path) => {
-    console.log("Navigating to: " + path);
-  };
-
+  
   type DCO = {
     id: string;
     name: string;
@@ -622,72 +578,78 @@ const App = () => {
     }));
   }, []);
 
-  const handlePowerControl = async (deviceId, action, value = null) => {
-    try {
-      // Simulate AI power control action
-      const device = devices.find(d => d.id === deviceId);
-      if (!device) return;
+  interface PowerControlAction {
+    deviceId: string;
+    action: 'shutdown' | 'limit' | 'restore';
+    value?: number; // Optional value for limit action
+  }
 
-      let updatedDevice = { ...device };
-      let alertMessage = '';
+  // const handlePowerControl = async ({deviceId, action, value = null}:PowerControlAction) => {
+  //   try {
+  //     // Simulate AI power control action
+  //     const device = devices.find(d => d.id === deviceId);
+  //     if (!device) return;
 
-      switch (action) {
-        case 'shutdown':
-          updatedDevice.status = 'offline';
-          updatedDevice.powerConsumption = 0;
-          updatedDevice.voltage = 0;
-          updatedDevice.current = 0;
-          alertMessage = `AI Emergency Shutdown: ${device.name} has been automatically shut down due to critical safety concerns.`;
-          break;
-        case 'limit':
-          updatedDevice.powerConsumption = Math.min(device.powerConsumption, value);
-          alertMessage = `AI Power Limit Applied: ${device.name} power consumption limited to ${value}W for safety.`;
-          break;
-        case 'restore':
-          updatedDevice.status = 'online';
-          updatedDevice.powerConsumption = device.powerConsumption || 100;
-          updatedDevice.voltage = 230;
-          updatedDevice.current = updatedDevice.powerConsumption / updatedDevice.voltage;
-          alertMessage = `AI Power Restored: ${device.name} power has been restored with enhanced monitoring.`;
-          break;
-      }
+  //     let updatedDevice = { ...device };
+  //     let alertMessage = '';
 
-      // Update device in state
-      setDevices(prev => prev.map(d => d.id === deviceId ? updatedDevice : d));
+  //     switch (action) {
+  //       case 'shutdown':
+  //         updatedDevice.status = 'offline';
+  //         updatedDevice.powerConsumption = 0;
+  //         updatedDevice.voltage = 0;
+  //         updatedDevice.current = 0;
+  //         alertMessage = `AI Emergency Shutdown: ${device.name} has been automatically shut down due to critical safety concerns.`;
+  //         break;
+  //       case 'limit':
+  //         updatedDevice.powerConsumption = Math.min(device.powerConsumption, value);
+  //         alertMessage = `AI Power Limit Applied: ${device.name} power consumption limited to ${value}W for safety.`;
+  //         break;
+  //       case 'restore':
+  //         updatedDevice.status = 'online';
+  //         updatedDevice.powerConsumption = device.powerConsumption || 100;
+  //         updatedDevice.voltage = 230;
+  //         updatedDevice.current = updatedDevice.powerConsumption / updatedDevice.voltage;
+  //         alertMessage = `AI Power Restored: ${device.name} power has been restored with enhanced monitoring.`;
+  //         break;
+  //     }
 
-      // Create new alert for the action
-      const newAlert = {
-        id: Date.now().toString(),
-        type: action === 'shutdown' ? 'critical' : 'warning',
-        title: `AI Power Control Action: ${action.toUpperCase()}`,
-        message: alertMessage,
-        customerId: device.customerId,
-        customerName: device.customerName,
-        deviceId: deviceId,
-        deviceName: device.name,
-        meterId: device.meterId,
-        dcoId: selectedDCO,
-        priority: action === 'shutdown' ? 'critical' : 'medium',
-        status: 'active',
-        createdAt: new Date().toISOString(),
-        aiConfidence: 0.95,
-        recommendedAction: `Power control action executed automatically by AI system.`,
-        sentToCustomer: true,
-        sentToDCO: true,
-        powerAction: action,
-        powerActionTaken: true,
-        powerLimit: value,
-        powerActionTime: new Date().toISOString()
-      };
+  //     // Update device in state
+  //     setDevices(prev => prev.map(d => d.id === deviceId ? updatedDevice : d));
 
-      setAlerts(prev => [newAlert, ...prev]);
-      setShowPowerControlModal(false);
-      setPowerControlDevice(null);
+  //     // Create new alert for the action
+  //     const newAlert = {
+  //       id: Date.now().toString(),
+  //       type: action === 'shutdown' ? 'critical' : 'warning',
+  //       title: `AI Power Control Action: ${action.toUpperCase()}`,
+  //       message: alertMessage,
+  //       customerId: device.customerId,
+  //       customerName: device.customerName,
+  //       deviceId: deviceId,
+  //       deviceName: device.name,
+  //       meterId: device.meterId,
+  //       dcoId: selectedDCO,
+  //       priority: action === 'shutdown' ? 'critical' : 'medium',
+  //       status: 'active',
+  //       createdAt: new Date().toISOString(),
+  //       aiConfidence: 0.95,
+  //       recommendedAction: `Power control action executed automatically by AI system.`,
+  //       sentToCustomer: true,
+  //       sentToDCO: true,
+  //       powerAction: action,
+  //       powerActionTaken: true,
+  //       powerLimit: value,
+  //       powerActionTime: new Date().toISOString()
+  //     };
 
-    } catch (error) {
-      console.error('Error executing power control:', error);
-    }
-  };
+  //     setAlerts(prev => [newAlert, ...prev]);
+  //     setShowPowerControlModal(false);
+  //     setPowerControlDevice(null);
+
+  //   } catch (error) {
+  //     console.error('Error executing power control:', error);
+  //   }
+  // };
 
   const fetchDashboardData = async () => {
     setLoading(true);
@@ -723,7 +685,7 @@ const App = () => {
   useEffect(() => {
     fetchDashboardData();
     
-    const handleClickOutside = (event) => {
+    const handleClickOutside = (event:any) => {
       if (showUserMenu && !event.target.closest('.user-menu')) {
         setShowUserMenu(false);
       }
@@ -739,7 +701,7 @@ const App = () => {
     }
   }, [sidebarCollapsed]);
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status:any) => {
     switch (status) {
       case 'online':
       case 'active':
@@ -756,7 +718,7 @@ const App = () => {
     }
   };
 
-  const getPriorityColor = (priority) => {
+  const getPriorityColor = (priority:any) => {
     switch (priority) {
       case 'critical':
         return 'text-red-400 bg-red-400/10';
@@ -771,7 +733,7 @@ const App = () => {
     }
   };
 
-  const getStatusIcon = (status) => {
+  const getStatusIcon = (status:any) => {
     switch (status) {
       case 'online':
         return <Wifi className="w-4 h-4" />;

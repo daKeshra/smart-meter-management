@@ -1,10 +1,9 @@
-import React from 'react';
 import { 
   Zap, 
   Settings, 
   Bell, 
   Monitor, 
-  FileText, 
+  // FileText, 
   Users,
   Power,
   BarChart3,

@@ -1,17 +1,26 @@
-import React, { useState } from 'react';
+import  React, { useState } from 'react';
 import { 
   Gauge,
   Wifi,
   Zap,
   Users,
   Plus,
-  Search,
+  // Search,
   X,
   Save
 } from 'lucide-react';
 
+
+
+interface MetricCardProps {
+  title: string;
+  value: string | number;
+  subtitle: string;
+  icon: React.ElementType;
+}
+
 // MetricCard component
-const MetricCard = ({ title, value, subtitle, icon: Icon }) => (
+const MetricCard = ({ title, value, subtitle, icon: Icon }: MetricCardProps) => (
   <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
     <div className="flex items-center justify-between">
       <div>
@@ -26,8 +35,16 @@ const MetricCard = ({ title, value, subtitle, icon: Icon }) => (
   </div>
 );
 
+interface AddMeterModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onAddMeter: (meter: any, customer: any) => void;
+  DisCos: any[];
+  selectedDCO: any;
+}
+
 // Add Meter Modal Component
-const AddMeterModal = ({ isOpen, onClose, onAddMeter, DisCos, selectedDCO }) => {
+const AddMeterModal = ({ isOpen, onClose, onAddMeter, DisCos, selectedDCO }: AddMeterModalProps) => {
   const [formData, setFormData] = useState({
     serialNumber: '',
     location: '',
@@ -354,7 +371,7 @@ const MetersView = () => {
     }
   ]);
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status:any) => {
     switch (status) {
       case 'online':
         return 'bg-emerald-600 text-white';
@@ -367,7 +384,7 @@ const MetersView = () => {
     }
   };
 
-  const handleAddMeter = (newMeter, newCustomer) => {
+  const handleAddMeter = (newMeter:any, newCustomer:any) => {
     setMeters(prev => [...prev, newMeter]);
     setCustomers(prev => [...prev, newCustomer]);
   };
