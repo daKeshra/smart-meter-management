@@ -133,7 +133,7 @@ const LoginPage = ({ onSwitchToSignup, onLoginSuccess, isModal = false }) => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Your email address"
+                placeholder="user@example.com"
                 className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
                 required
                 disabled={isLoading}
@@ -152,7 +152,7 @@ const LoginPage = ({ onSwitchToSignup, onLoginSuccess, isModal = false }) => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder="Your password"
+                  placeholder="password123"
                   className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 pr-12"
                   required
                   disabled={isLoading}
