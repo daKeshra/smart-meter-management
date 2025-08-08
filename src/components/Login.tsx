@@ -125,7 +125,7 @@ const LoginPage = ({ onSwitchToSignup, onLoginSuccess, isModal = false }) => {
             {/* Email Field */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-                Email address
+                Email address:user@example.com
               </label>
               <input
                 id="email"
@@ -143,7 +143,7 @@ const LoginPage = ({ onSwitchToSignup, onLoginSuccess, isModal = false }) => {
             {/* Password Field */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
-                Password
+                Password:password123
               </label>
               <div className="relative">
                 <input
