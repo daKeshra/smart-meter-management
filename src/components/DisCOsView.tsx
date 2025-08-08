@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Building2,
   Activity,
@@ -11,16 +11,23 @@ import {
   MapPin
 } from 'lucide-react';
 import MetricCard from './MetricCard';
+import AddDisCoModal from './AddDisCoModal';
 
 const DisCosView = ({ 
   DisCos, 
   searchTerm, 
   setSearchTerm, 
-  setShowAddDCOModal, 
   setSelectedDCO, 
   getStatusColor 
 }) => {
-  const filteredDisCos = DisCos.filter(dco => {
+  const [showAddDCOModal, setShowAddDCOModal] = useState(false);
+  const [discoList, setDiscoList] = useState(DisCos);
+
+  const handleAddDisco = (newDisco) => {
+    setDiscoList(prev => [...prev, newDisco]);
+  };
+
+  const filteredDisCos = discoList.filter(dco => {
     const matchesSearch = dco.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          dco.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          dco.email.toLowerCase().includes(searchTerm.toLowerCase());
@@ -43,19 +50,19 @@ const DisCosView = ({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <MetricCard
           title="Total DisCos"
-          value={DisCos.length}
+          value={discoList.length}
           subtitle="Registered companies"
           icon={Building2}
         />
         <MetricCard
           title="Active DisCos"
-          value={DisCos.filter(d => d.status === 'active').length}
+          value={discoList.filter(d => d.status === 'active').length}
           subtitle="Currently operational"
           icon={Activity}
         />
         <MetricCard
           title="Total Coverage"
-          value={DisCos.reduce((sum, d) => sum + d.customerCount, 0)}
+          value={discoList.reduce((sum, d) => sum + d.customerCount, 0)}
           subtitle="Customers served"
           icon={Users}
         />
@@ -124,6 +131,12 @@ const DisCosView = ({
           ))}
         </div>
       </div>
+
+      <AddDisCoModal 
+        isOpen={showAddDCOModal}
+        onClose={() => setShowAddDCOModal(false)}
+        onSubmit={handleAddDisco}
+      />
     </div>
   );
 };

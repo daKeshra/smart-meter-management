@@ -26,31 +26,20 @@ const DashboardView = ({
   meters, 
   customers 
 }) => {
-  const selectedDCOData = selectedDCO === 'all' 
-    ? { name: 'All DisCos' } 
-    : DisCos.find(dco => dco.id === selectedDCO);
-  
-  const dcoMeters = selectedDCO === 'all' 
-    ? meters 
-    : meters.filter(meter => meter.dcoId === selectedDCO);
-  
-  const dcoCustomers = selectedDCO === 'all'
-    ? customers
-    : customers.filter(customer => 
-        dcoMeters.some(meter => meter.id === customer.meterId)
-      );
-  
-  const dcoDevices = selectedDCO === 'all'
-    ? devices
-    : devices.filter(device => 
-        dcoCustomers.some(customer => customer.id === device.customerId)
-      );
+  const selectedDCOData = DisCos.find(dco => dco.id === selectedDCO);
+  const dcoMeters = meters.filter(meter => meter.dcoId === selectedDCO);
+  const dcoCustomers = customers.filter(customer => 
+    dcoMeters.some(meter => meter.id === customer.meterId)
+  );
+  const dcoDevices = devices.filter(device => 
+    dcoCustomers.some(customer => customer.id === device.customerId)
+  );
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold text-white">Energy Dashboard</h2>
+          <h2 className="text-3xl font-bold text-white">Energy Monitoring Dashboard</h2>
           <p className="text-gray-400 mt-1">Monitoring {selectedDCOData?.name || 'All DisCos'}</p>
         </div>
         <div className="flex items-center space-x-3">
@@ -59,7 +48,6 @@ const DashboardView = ({
             onChange={(e) => setSelectedDCO(e.target.value)}
             className="px-4 py-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:border-emerald-400 focus:outline-none"
           >
-            <option value="all">View All DisCos</option>
             {DisCos.map(dco => (
               <option key={dco.id} value={dco.id}>{dco.name}</option>
             ))}
@@ -104,6 +92,7 @@ const DashboardView = ({
         />
       </div>
 
+      
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <MetricCard
           title="Total Meters"
@@ -119,7 +108,7 @@ const DashboardView = ({
         />
         <MetricCard
           title="Avg Power Factor"
-          value={(dcoMeters.reduce((sum, meter) => sum + meter.powerFactor, 0) / (dcoMeters.length || 1)).toFixed(2)}
+          value={(dcoMeters.reduce((sum, meter) => sum + meter.powerFactor, 0) / dcoMeters.length || 0).toFixed(2)}
           subtitle="System efficiency"
           icon={TrendingUp}
         />
@@ -150,10 +139,7 @@ const DashboardView = ({
         <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
           <h3 className="text-xl font-bold text-white mb-4">Critical Alerts</h3>
           <div className="space-y-3">
-            {alerts.filter(alert => 
-              (selectedDCO === 'all' || alert.dcoId === selectedDCO) && 
-              alert.priority === 'critical'
-            ).slice(0, 3).map(alert => (
+            {alerts.filter(alert => alert.dcoId === selectedDCO && alert.priority === 'critical').slice(0, 3).map(alert => (
               <div key={alert.id} className="p-3 bg-red-900/20 border border-red-700 rounded-lg">
                 <div className="flex items-start space-x-3">
                   <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
@@ -165,10 +151,7 @@ const DashboardView = ({
                 </div>
               </div>
             ))}
-            {alerts.filter(alert => 
-              (selectedDCO === 'all' || alert.dcoId === selectedDCO) && 
-              alert.priority === 'critical'
-            ).length === 0 && (
+            {alerts.filter(alert => alert.dcoId === selectedDCO && alert.priority === 'critical').length === 0 && (
               <div className="text-center py-8 text-gray-400">
                 <CheckCircle className="w-8 h-8 mx-auto mb-2" />
                 <p>No critical alerts at this time</p>
@@ -177,7 +160,7 @@ const DashboardView = ({
           </div>
         </div>
       </div>
-    </div>
+  </div>
   );
 };
 

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState, useEffect } from 'react';
 import { 
     Settings, 
@@ -7,9 +6,11 @@ import {
   WifiOff,
   // Zap as ZapOff,
 } from 'lucide-react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 // import { LineChart as RechartsLineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area, BarChart, Bar, PieChart as RechartsPieChart, Cell, Pie } from 'recharts';
 
 import Sidebar from './components/Sidebar';
+import HomeView from './components/HomeView';
 import DashboardView from './components/DashboardView';
 import DisCosView from './components/DisCOsView';
 import MetersView from './components/MetersView';
@@ -19,34 +20,20 @@ import DevicesView from './components/DevicesView';
 import AlertsView from './components/AlertsView';
 import SettingsView from './components/SettingsView';
 
-const App = () => {
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [selectedDCO, setSelectedDCO] = useState('1');
-  const [energyData, setEnergyData] = useState({
-    currentConsumption: 'N/A',
-    voltage: 230,
-    current: 12.5,
-    power: 2.8,
-    totalDevices: 0,
-    activeAlerts: 0,
-    lastUpdate: '4% from last hour'
-  });
+type DCO = {
+  id: string;
+  name: string;
+  code: string;
+  email: string;
+  phone: string;
+  address: string;
+  region: string;
+  registrationDate: string;
+  status: string;
+  meterCount: number;
+  customerCount: number;
+};
 
-  
-  type DCO = {
-    id: string;
-    name: string;
-    code: string;
-    email: string;
-    phone: string;
-    address: string;
-    region: string;
-    registrationDate: string;
-    status: string;
-    meterCount: number;
-    customerCount: number;
-  };
-  const [DisCos, setDisCos] = useState<DCO[]>([]);
   type Meter = {
     id: string;
     serialNumber: string;
@@ -63,7 +50,7 @@ const App = () => {
     powerFactor: number;
     customerCount: number;
   };
-  const [meters, setMeters] = useState<Meter[]>([]);
+
   type Customer = {
     id: string;
     name: string;
@@ -80,7 +67,6 @@ const App = () => {
     lastBillAmount: number;
     currentConsumption: number;
   };
-  const [customers, setCustomers] = useState<Customer[]>([]);
   type Device = {
     id: string;
     name: string;
@@ -98,7 +84,7 @@ const App = () => {
     detectedAt: string;
     deviceSignature: string;
   };
-  const [devices, setDevices] = useState<Device[]>([]);
+
   type Alert = {
     id: string;
     type: string;
@@ -123,8 +109,42 @@ const App = () => {
     powerActionTime?: string;
   };
 
+  interface ChartDataPoint {
+  time: string;
+  timestamp: Date;
+  consumption: number;
+  voltage: number;
+  current: number;
+  powerFactor: number;
+  temperature: number;
+}
+
+interface PowerChartData {
+  '24h': ChartDataPoint[];
+  '7d': ChartDataPoint[];
+  '30d': ChartDataPoint[];
+}
+
+
+
+const App = () => {
+  // const [activeTab, setActiveTab] = useState('home');
+  const [selectedDCO, setSelectedDCO] = useState('1');
+  const [DisCos, setDisCos] = useState<DCO[]>([]);
+  const [meters, setMeters] = useState<Meter[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [devices, setDevices] = useState<Device[]>([]);
   const [alerts, setAlerts] = useState<Alert[]>([]);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<any>(null); // or create a User type
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [powerControlDevice, setPowerControlDevice] = useState<Device | null>(null);
+  const [powerChartData, setPowerChartData] = useState<PowerChartData>({
+  '24h': [],
+  '7d': [],
+  '30d': []
+});
+  // const [powerChartData, setPowerChartData] = useState<any>([]); // or create proper chart data type
+  
   const [loading, setLoading] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -132,11 +152,23 @@ const App = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [deviceFilter, setDeviceFilter] = useState('all');
   const [alertFilter, setAlertFilter] = useState('all');
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [chartTimeRange, setChartTimeRange] = useState('24h');
-  const [powerChartData, setPowerChartData] = useState([]);
   const [showPowerControlModal, setShowPowerControlModal] = useState(false);
-  const [powerControlDevice, setPowerControlDevice] = useState(null);
+  const [showAddDCOModal, setShowAddDCOModal] = useState(false);
+
+  const [energyData, setEnergyData] = useState({
+    currentConsumption: 'N/A',
+    voltage: 230,
+    current: 12.5,
+    power: 2.8,
+    totalDevices: 0,
+    activeAlerts: 0,
+    lastUpdate: '4% from last hour'
+  });
+
+  
+ 
+
 
   // Mock data for demonstration
   useEffect(() => {
@@ -685,8 +717,9 @@ const App = () => {
   useEffect(() => {
     fetchDashboardData();
     
-    const handleClickOutside = (event:any) => {
-      if (showUserMenu && !event.target.closest('.user-menu')) {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (showUserMenu && !target.closest('.user-menu')) {
         setShowUserMenu(false);
       }
     };
@@ -701,7 +734,7 @@ const App = () => {
     }
   }, [sidebarCollapsed]);
 
-  const getStatusColor = (status:any) => {
+  const getStatusColor = (status:string) => {
     switch (status) {
       case 'online':
       case 'active':
@@ -718,7 +751,7 @@ const App = () => {
     }
   };
 
-  const getPriorityColor = (priority:any) => {
+  const getPriorityColor = (priority:string) => {
     switch (priority) {
       case 'critical':
         return 'text-red-400 bg-red-400/10';
@@ -733,7 +766,7 @@ const App = () => {
     }
   };
 
-  const getStatusIcon = (status:any) => {
+  const getStatusIcon = (status:string) => {
     switch (status) {
       case 'online':
         return <Wifi className="w-4 h-4" />;
@@ -746,135 +779,247 @@ const App = () => {
     }
   };
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'dashboard':
-        return <DashboardView 
-          energyData={energyData} 
-          loading={loading} 
-          selectedDCO={selectedDCO} 
-          setSelectedDCO={setSelectedDCO} 
-          fetchDashboardData={fetchDashboardData} 
-          DisCos={DisCos} 
-          alerts={alerts} 
-          devices={devices} 
-          meters={meters} 
-          customers={customers} 
-        />;
-      case 'DisCos':
-        return <DisCosView 
-          DisCos={DisCos} 
-          searchTerm={searchTerm} 
-          setSearchTerm={setSearchTerm} 
-          setShowAddDCOModal={setShowAddDCOModal} 
-          setSelectedDCO={setSelectedDCO} 
-          getStatusColor={getStatusColor} 
-        />;
-      case 'meters':
-        return <MetersView 
-          selectedDCO={selectedDCO} 
-          setSelectedDCO={setSelectedDCO} 
-          DisCos={DisCos} 
-          meters={meters} 
-          customers={customers} 
-          setShowAddMeterModal={setShowAddMeterModal} 
-          getStatusColor={getStatusColor} 
-        />;
-      case 'analytics':
-        return <AnalyticsView 
-          selectedDCO={selectedDCO} 
-          setSelectedDCO={setSelectedDCO} 
-          DisCos={DisCos} 
-          powerChartData={powerChartData} 
-          chartTimeRange={chartTimeRange} 
-          setChartTimeRange={setChartTimeRange} 
-          meters={meters} 
-          customers={customers} 
-          devices={devices} 
-        />;
-      case 'customers':
-        return <CustomersView 
-          selectedDCO={selectedDCO} 
-          setSelectedDCO={setSelectedDCO} 
-          DisCos={DisCos} 
-          searchTerm={searchTerm} 
-          setSearchTerm={setSearchTerm} 
-          meters={meters} 
-          customers={customers} 
-          devices={devices} 
-          selectedCustomer={selectedCustomer} 
-          setSelectedCustomer={setSelectedCustomer} 
-          chartTimeRange={chartTimeRange} 
-          setChartTimeRange={setChartTimeRange} 
-          powerChartData={powerChartData} 
-          setPowerControlDevice={setPowerControlDevice} 
-          setShowPowerControlModal={setShowPowerControlModal} 
-        />;
-      case 'devices':
-        return <DevicesView 
-          selectedDCO={selectedDCO} 
-          setSelectedDCO={setSelectedDCO} 
-          DisCos={DisCos} 
-          searchTerm={searchTerm} 
-          setSearchTerm={setSearchTerm} 
-          deviceFilter={deviceFilter} 
-          setDeviceFilter={setDeviceFilter} 
-          meters={meters} 
-          customers={customers} 
-          devices={devices} 
-          getStatusColor={getStatusColor} 
-          getStatusIcon={getStatusIcon} 
-        />;
-      case 'alerts':
-        return <AlertsView 
-          selectedDCO={selectedDCO} 
-          setSelectedDCO={setSelectedDCO} 
-          DisCos={DisCos} 
-          searchTerm={searchTerm} 
-          setSearchTerm={setSearchTerm} 
-          alertFilter={alertFilter} 
-          setAlertFilter={setAlertFilter} 
-          alerts={alerts} 
-          getPriorityColor={getPriorityColor} 
-        />;
-      case 'settings':
-        return <SettingsView user={user} setUser={setUser} />;
-      default:
-        return <DashboardView 
-          energyData={energyData} 
-          loading={loading} 
-          selectedDCO={selectedDCO} 
-          setSelectedDCO={setSelectedDCO} 
-          fetchDashboardData={fetchDashboardData} 
-          DisCos={DisCos} 
-          alerts={alerts} 
-          devices={devices} 
-          meters={meters} 
-          customers={customers} 
-        />;
-    }
-  };
+  // const renderContent = () => {
+  //   switch (activeTab) {
+  //     case 'home':
+  //       return <HomeView 
+  //         DisCos={DisCos} 
+  //         meters={meters} 
+  //         customers={customers} 
+  //         devices={devices}
+  //         alerts={alerts}
+  //         selectedDCO={selectedDCO}
+  //       />;
+  //     case 'dashboard':
+  //       return <DashboardView 
+  //         energyData={energyData} 
+  //         loading={loading} 
+  //         selectedDCO={selectedDCO} 
+  //         setSelectedDCO={setSelectedDCO} 
+  //         fetchDashboardData={fetchDashboardData} 
+  //         DisCos={DisCos} 
+  //         alerts={alerts} 
+  //         devices={devices} 
+  //         meters={meters} 
+  //         customers={customers} 
+  //       />;
+  //     case 'DisCos':
+  //       return <DisCosView 
+  //         DisCos={DisCos} 
+  //         searchTerm={searchTerm} 
+  //         setSearchTerm={setSearchTerm} 
+  //         setShowAddDCOModal={setShowAddDCOModal} 
+  //         setSelectedDCO={setSelectedDCO} 
+  //         getStatusColor={getStatusColor} 
+  //       />;
+  //     case 'meters':
+  //       return <MetersView 
+  //         selectedDCO={selectedDCO} 
+  //         setSelectedDCO={setSelectedDCO} 
+  //         DisCos={DisCos} 
+  //         meters={meters} 
+  //         customers={customers} 
+  //         setShowAddMeterModal={setShowAddMeterModal} 
+  //         getStatusColor={getStatusColor} 
+  //       />;
+  //     case 'analytics':
+  //       return <AnalyticsView 
+  //         selectedDCO={selectedDCO} 
+  //         setSelectedDCO={setSelectedDCO} 
+  //         DisCos={DisCos} 
+  //         powerChartData={powerChartData} 
+  //         chartTimeRange={chartTimeRange} 
+  //         setChartTimeRange={setChartTimeRange} 
+  //         meters={meters} 
+  //         customers={customers} 
+  //         devices={devices} 
+  //       />;
+  //     case 'customers':
+  //       return <CustomersView 
+  //         selectedDCO={selectedDCO} 
+  //         setSelectedDCO={setSelectedDCO} 
+  //         DisCos={DisCos} 
+  //         searchTerm={searchTerm} 
+  //         setSearchTerm={setSearchTerm} 
+  //         meters={meters} 
+  //         customers={customers} 
+  //         devices={devices} 
+  //         selectedCustomer={selectedCustomer} 
+  //         setSelectedCustomer={setSelectedCustomer} 
+  //         chartTimeRange={chartTimeRange} 
+  //         setChartTimeRange={setChartTimeRange} 
+  //         powerChartData={powerChartData} 
+  //         setPowerControlDevice={setPowerControlDevice} 
+  //         setShowPowerControlModal={setShowPowerControlModal} 
+  //       />;
+  //     case 'devices':
+  //       return <DevicesView 
+  //         selectedDCO={selectedDCO} 
+  //         setSelectedDCO={setSelectedDCO} 
+  //         DisCos={DisCos} 
+  //         searchTerm={searchTerm} 
+  //         setSearchTerm={setSearchTerm} 
+  //         deviceFilter={deviceFilter} 
+  //         setDeviceFilter={setDeviceFilter} 
+  //         meters={meters} 
+  //         customers={customers} 
+  //         devices={devices} 
+  //         getStatusColor={getStatusColor} 
+  //         getStatusIcon={getStatusIcon} 
+  //       />;
+  //     case 'alerts':
+  //       return <AlertsView 
+  //         selectedDCO={selectedDCO} 
+  //         setSelectedDCO={setSelectedDCO} 
+  //         DisCos={DisCos} 
+  //         searchTerm={searchTerm} 
+  //         setSearchTerm={setSearchTerm} 
+  //         alertFilter={alertFilter} 
+  //         setAlertFilter={setAlertFilter} 
+  //         alerts={alerts} 
+  //         getPriorityColor={getPriorityColor} 
+  //       />;
+  //     case 'settings':
+  //       return <SettingsView user={user} setUser={setUser} />;
+  //     default:
+  //       return <HomeView 
+  //         DisCos={DisCos} 
+  //         meters={meters} 
+  //         customers={customers} 
+  //         devices={devices}
+  //         alerts={alerts}
+  //         selectedDCO={selectedDCO}
+  //       />;
+  //   }
+  // };
 
   return (
-    <div className="min-h-screen bg-gray-900 flex">
-      <Sidebar 
-        activeTab={activeTab} 
-        setActiveTab={setActiveTab} 
-        sidebarCollapsed={sidebarCollapsed} 
-        setSidebarCollapsed={setSidebarCollapsed} 
-        user={user} 
-        showUserMenu={showUserMenu} 
-        setShowUserMenu={setShowUserMenu} 
-      />
-      
-      <div className={`flex-1 overflow-auto transition-all duration-300 ${
-        sidebarCollapsed ? 'ml-16' : 'ml-64'
-      }`}>
-        <main className="p-8">
-          {renderContent()}
-        </main>
+    <BrowserRouter>
+      <div className="min-h-screen bg-gray-900">  {/* removed 'flex' class to avoid flexbox issues */}
+        <Routes>
+          {/* Home route - no sidebar */}
+          <Route path="/" element={<HomeView 
+            // DisCos={DisCos} 
+            // meters={meters} 
+            // customers={customers} 
+            // devices={devices}
+            // alerts={alerts}
+            // selectedDCO={selectedDCO}
+          />} />
+          
+          {/* Dashboard routes - with sidebar */}
+          <Route path="/dashboard/*" element={
+            <>
+              <Sidebar 
+                // activeTab={activeTab} 
+                // setActiveTab={setActiveTab}
+                // active={isActive}
+                sidebarCollapsed={sidebarCollapsed} 
+                setSidebarCollapsed={setSidebarCollapsed} 
+                user={user} 
+                showUserMenu={showUserMenu} 
+                setShowUserMenu={setShowUserMenu} 
+              />
+              
+              <div className={`flex-1 overflow-auto transition-all duration-300 ${
+                sidebarCollapsed ? 'ml-16' : 'ml-64'
+              }`}>
+                <main className="p-8">
+                  <Routes>
+                    <Route index element={<DashboardView 
+                      energyData={energyData} 
+                      loading={loading} 
+                      selectedDCO={selectedDCO} 
+                      setSelectedDCO={setSelectedDCO} 
+                      fetchDashboardData={fetchDashboardData} 
+                      DisCos={DisCos} 
+                      alerts={alerts} 
+                      devices={devices} 
+                      meters={meters} 
+                      customers={customers} 
+                    />} />
+                    <Route path="discos" element={<DisCosView 
+                      DisCos={DisCos} 
+                      searchTerm={searchTerm} 
+                      setSearchTerm={setSearchTerm} 
+                      setShowAddDCOModal={setShowAddDCOModal} 
+                      setSelectedDCO={setSelectedDCO} 
+                      getStatusColor={getStatusColor} 
+                    />} />
+                    <Route path="meters" element={<MetersView 
+                      selectedDCO={selectedDCO} 
+                      setSelectedDCO={setSelectedDCO} 
+                      DisCos={DisCos} 
+                      meters={meters} 
+                      customers={customers} 
+                      setShowAddMeterModal={setShowAddMeterModal} 
+                      getStatusColor={getStatusColor} 
+                    />} />
+                    <Route path="analytics" element={<AnalyticsView 
+                      selectedDCO={selectedDCO} 
+                      setSelectedDCO={setSelectedDCO} 
+                      DisCos={DisCos} 
+                      powerChartData={powerChartData} 
+                      chartTimeRange={chartTimeRange} 
+                      setChartTimeRange={setChartTimeRange} 
+                      meters={meters} 
+                      customers={customers} 
+                      devices={devices} 
+                    />} />
+                    <Route path="customers" element={<CustomersView 
+                      selectedDCO={selectedDCO} 
+                      setSelectedDCO={setSelectedDCO} 
+                      DisCos={DisCos} 
+                      searchTerm={searchTerm} 
+                      setSearchTerm={setSearchTerm} 
+                      meters={meters} 
+                      customers={customers} 
+                      devices={devices} 
+                      selectedCustomer={selectedCustomer} 
+                      setSelectedCustomer={setSelectedCustomer} 
+                      chartTimeRange={chartTimeRange} 
+                      setChartTimeRange={setChartTimeRange} 
+                      powerChartData={powerChartData} 
+                      setPowerControlDevice={setPowerControlDevice} 
+                      setShowPowerControlModal={setShowPowerControlModal} 
+                    />} />
+                    <Route path="devices" element={<DevicesView 
+                      selectedDCO={selectedDCO} 
+                      setSelectedDCO={setSelectedDCO} 
+                      DisCos={DisCos} 
+                      searchTerm={searchTerm} 
+                      setSearchTerm={setSearchTerm} 
+                      deviceFilter={deviceFilter} 
+                      setDeviceFilter={setDeviceFilter} 
+                      meters={meters} 
+                      customers={customers} 
+                      devices={devices} 
+                      getStatusColor={getStatusColor} 
+                      getStatusIcon={getStatusIcon} 
+                    />} />
+                    <Route path="alerts" element={<AlertsView 
+                      selectedDCO={selectedDCO} 
+                      setSelectedDCO={setSelectedDCO} 
+                      DisCos={DisCos} 
+                      searchTerm={searchTerm} 
+                      setSearchTerm={setSearchTerm} 
+                      alertFilter={alertFilter} 
+                      setAlertFilter={setAlertFilter} 
+                      alerts={alerts} 
+                      getPriorityColor={getPriorityColor} 
+                    />} />
+                    <Route path="settings" element={<SettingsView user={user} setUser={setUser} />} />
+                  </Routes>
+                </main>
+              </div>
+            </>
+          } />
+          
+          {/* Redirect unknown routes to home */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </div>
-    </div>
+    </BrowserRouter>
   );
 };
 
