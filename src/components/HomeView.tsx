@@ -37,7 +37,7 @@ const HomeView = () => {
         <div className="max-w-6xl mx-auto px-8 py-4 flex justify-between items-center">
           <div className="flex items-center text-xl font-bold text-gray-200">
             <span className="text-2xl text-emerald-400 mr-2">⚡</span>
-            Smart Energy Monitor
+              Smart Auto Meter
           </div>
           <div className="flex space-x-4">
             <button
