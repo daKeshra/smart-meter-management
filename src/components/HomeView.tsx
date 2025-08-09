@@ -47,8 +47,8 @@ const HomeView = () => {
               Login
             </button>
             <button
-              // onClick={() => openModal('signup')}
-              onClick={() => e.preventDefault()}
+              onClick={() => openModal('signup')}
+              // onClick={() => e.preventDefault()}
 
               className="px-6 py-3 bg-gradient-to-r from-emerald-400 to-emerald-600 text-gray-900 rounded-full font-semibold shadow-lg hover:shadow-emerald-400/30 transition-all duration-300 transform hover:-translate-y-1"
             >
@@ -69,7 +69,7 @@ const HomeView = () => {
             Take control of your energy costs and reduce your environmental footprint.
           </p>
           <button
-            onClick={() => openModal('login')}
+            onClick={() => openModal('signup')}
             className="px-8 py-4 text-lg bg-gradient-to-r from-emerald-400 to-emerald-600 text-gray-900 rounded-full font-semibold shadow-lg hover:shadow-emerald-400/40 transition-all duration-300 transform hover:-translate-y-1 animate-fade-in-up delay-400"
           >
             Get Started Free

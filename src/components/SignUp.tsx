@@ -2,19 +2,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
-import axios from 'axios';
-
-// Configure axios base URL (adjust according to your environment)
-const api = axios.create({
-  baseURL:  'http://localhost:8000/api/v1',
-});
 
 const SignupPage = ({ onSwitchToLogin, onSignupSuccess, isModal = false }) => {
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
     email: '',
-    phone_number: '',  // Changed to match typical API expectations
+    phone_number: '',
     password: '',
     confirmPassword: ''
   });
@@ -38,9 +32,14 @@ const SignupPage = ({ onSwitchToLogin, onSignupSuccess, isModal = false }) => {
     setError('');
     setSuccess('');
 
-    // Client-side validation
     if (!formData.first_name.trim() || !formData.last_name.trim()) {
       setError('First name and last name are required');
+      setIsLoading(false);
+      return;
+    }
+
+    if (!formData.email.includes('@')) {
+      setError('Please enter a valid email address');
       setIsLoading(false);
       return;
     }
@@ -57,14 +56,32 @@ const SignupPage = ({ onSwitchToLogin, onSignupSuccess, isModal = false }) => {
       return;
     }
 
+    await new Promise(resolve => setTimeout(resolve, 800));
+
     try {
-      // Prepare data for API (remove confirmPassword and format phone number)
-      const { confirmPassword, ...userData } = formData;
+      const mockUser = {
+        id: `user-${Math.random().toString(36).substr(2, 9)}`,
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        email: formData.email,
+        phone_number: formData.phone_number,
+        role: 'user',
+        created_at: new Date().toISOString()
+      };
+
+      const mockToken = btoa(JSON.stringify({
+        email: formData.email,
+        userId: mockUser.id,
+        exp: Date.now() + 86400000 // Expires in 1 day
+      }));
+
       
-      // Make API call to FastAPI backend
-      const response = await api.post('/signup', userData);
-      
-      setSuccess('Account created successfully! Redirecting to login...');
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('token', mockToken);
+        localStorage.setItem('user', JSON.stringify(mockUser));
+      }
+
+      setSuccess('Account created successfully!');
       
       // Clear form
       setFormData({
@@ -79,39 +96,15 @@ const SignupPage = ({ onSwitchToLogin, onSignupSuccess, isModal = false }) => {
       // Handle success (either close modal or redirect)
       setTimeout(() => {
         if (onSignupSuccess) {
-          onSignupSuccess();
+          onSignupSuccess(mockUser, mockToken);
         } else {
-          navigate('/login');
+          navigate('/dashboard'); 
         }
       }, 1500);
 
     } catch (error) {
       console.error('Signup error:', error);
-      let errorMessage = 'Registration failed. Please try again.';
-      
-      if (error.response) {
-        // Handle API validation errors
-        if (error.response.data && error.response.data.detail) {
-          if (typeof error.response.data.detail === 'string') {
-            errorMessage = error.response.data.detail;
-          } else if (Array.isArray(error.response.data.detail)) {
-            // Handle field-specific validation errors
-            errorMessage = error.response.data.detail.map(err => err.msg).join(', ');
-          }
-        }
-        
-        // Handle specific HTTP errors
-        if (error.response.status === 404) {
-          errorMessage = 'Service unavailable. Please try again later.';
-        } else if (error.response.status === 400 && errorMessage.includes('already registered')) {
-          errorMessage = 'This email is already registered. Please use a different email or login.';
-        }
-      } else if (error.request) {
-        // The request was made but no response was received
-        errorMessage = 'Network error. Please check your connection.';
-      }
-      
-      setError(errorMessage);
+      setError('An error occurred during registration');
     } finally {
       setIsLoading(false);
     }
@@ -122,7 +115,7 @@ const SignupPage = ({ onSwitchToLogin, onSignupSuccess, isModal = false }) => {
       handleSubmit(e);
     }
   };
-  
+    
   return (
     <div className={isModal ? "" : "min-h-screen bg-gray-900 flex items-center justify-center p-4"}>
       <div className={`${isModal ? "w-full" : "w-full max-w-md"}`}>

@@ -34,58 +34,57 @@ const LoginPage = ({ onSwitchToSignup, onLoginSuccess, isModal = false }) => {
   const [success, setSuccess] = useState('');
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError('');
-    setSuccess('');
+  e.preventDefault();
+  setIsLoading(true);
+  setError('');
+  setSuccess('');
 
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 800));
+  await new Promise(resolve => setTimeout(resolve, 500));
 
-    try {
-      // Find user in mock database
-      const user = mockUsers.find(u => u.email === email && u.password === password);
-
-      if (user) {
-        setSuccess('Login successful!');
-        
-        // Generate a mock token (in a real app, this would come from your backend)
-        const mockToken = btoa(JSON.stringify({
-          email: user.email,
-          id: user.user.id,
-          exp: Date.now() + 86400000 // Expires in 1 day
-        }));
-
-        // Store token and user data
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('token', mockToken);
-          localStorage.setItem('user', JSON.stringify(user.user));
-        }
-        
-        setTimeout(() => {
-          if (onLoginSuccess) {
-            onLoginSuccess(user.user, mockToken);
-          }
-        }, 500);
-      } else {
-        setError('Invalid email or password');
-        
-        // Show option to switch to signup if no account found
-        if (!mockUsers.some(u => u.email === email)) {
-          setTimeout(() => {
-            if (onSwitchToSignup) {
-              onSwitchToSignup();
-            }
-          }, 2000);
-        }
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      setError('An error occurred during login');
-    } finally {
-      setIsLoading(false);
+  try {
+    if (email.trim() === '' || password.trim() === '') {
+      setError('Please enter both email and password');
+      return;
     }
-  };
+
+    setSuccess('Login successful!');
+    
+    // Create mock user data
+    const mockUser = {
+      id: `user-${Math.random().toString(36).substr(2, 9)}`,
+      name: email.split('@')[0] || 'User',  
+      email: email,
+      role: 'user',
+      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(email.split('@')[0])}&background=random`
+    };
+
+    // Generate a simple mock token
+    const mockToken = btoa(JSON.stringify({
+      email: email,
+      userId: mockUser.id,
+      exp: Date.now() + 86400000 
+    }));
+
+    
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('token', mockToken);
+      localStorage.setItem('user', JSON.stringify(mockUser));
+    }
+    
+    // Trigger success callback after short delay
+    setTimeout(() => {
+      if (onLoginSuccess) {
+        onLoginSuccess(mockUser, mockToken);
+      }
+    }, 500);
+
+  } catch (error) {
+    console.error('Login error:', error);
+    setError('An error occurred during login');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
@@ -125,7 +124,7 @@ const LoginPage = ({ onSwitchToSignup, onLoginSuccess, isModal = false }) => {
             {/* Email Field */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-                Email address:user@example.com
+                Email address
               </label>
               <input
                 id="email"
@@ -143,7 +142,7 @@ const LoginPage = ({ onSwitchToSignup, onLoginSuccess, isModal = false }) => {
             {/* Password Field */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
-                Password:password123
+                Password
               </label>
               <div className="relative">
                 <input

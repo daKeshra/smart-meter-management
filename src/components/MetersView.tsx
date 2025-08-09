@@ -44,7 +44,6 @@ interface AddMeterModalProps {
   selectedDCO: any;
 }
 
-// Add Meter Modal Component
 const AddMeterModal = ({ isOpen, onClose, onAddMeter, DisCos, selectedDCO }: AddMeterModalProps) => {
   const [formData, setFormData] = useState({
     serialNumber: '',
@@ -73,7 +72,6 @@ const AddMeterModal = ({ isOpen, onClose, onAddMeter, DisCos, selectedDCO }: Add
       return;
     }
     
-    // Generate unique IDs
     const meterId = Date.now().toString();
     const customerId = (Date.now() + 1).toString();
     
